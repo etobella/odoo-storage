@@ -1,7 +1,7 @@
 # Copyright 2018 Creu Blanca
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import api, models
+from odoo import api, models, _
 from odoo.exceptions import UserError
 import logging
 import base64
