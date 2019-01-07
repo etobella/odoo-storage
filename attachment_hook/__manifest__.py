@@ -10,10 +10,11 @@
     'author': 'Creu Blanca,Odoo Community Association (OCA)',
     'website': 'https://github.com/OCA/odoo-storage',
     'depends': [
-        'attachment_hook',
+        'base',
     ],
     'data': [
     ],
     'demo': [
     ],
+    'post_load': 'post_load_hook',
 }

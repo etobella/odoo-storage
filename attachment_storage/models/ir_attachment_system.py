@@ -9,13 +9,13 @@ class IrAttachmentSystem(models.AbstractModel):
     _description = 'Ir Attachment System'
 
     @api.model
-    def read_datas(self, attach):
+    def read_datas(self, fname, bin_size=False, **kwargs):
         pass
 
     @api.model
-    def write_datas(self, attach):
+    def write_datas(self, value, checksum, **kwargs):
         pass
 
     @api.model
-    def delete_datas(self, attach):
+    def delete_datas(self, fname, **kwargs):
         pass

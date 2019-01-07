@@ -2,8 +2,8 @@
    :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
    :alt: License: AGPL-3
 
-==================
-Attachment Storage
-==================
+===============
+Attachment Hook
+===============
 
-Storage options for Odoo Attachments
+Add some hooks on attachments in order to add more options

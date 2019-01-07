@@ -1,19 +1,22 @@
 # Copyright 2018 Creu Blanca
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import api, fields, models
+from odoo import api, fields, models, _
+from odoo.exceptions import UserError
 import logging
 import base64
 _logger = logging.getLogger(__name__)
 try:
     from paramiko.client import SSHClient
 except (ImportError, IOError) as err:
-    logging.info(err)
+    _logger.info(err)
 
 
 class IrAttachmentSsh(models.AbstractModel):
     _name = 'ir.attachment.ssh'
     _inherit = 'ir.attachment.system'
+
+    connection = False
     
     @api.model
     def ssh_connection(self, storage):
@@ -30,21 +33,20 @@ class IrAttachmentSsh(models.AbstractModel):
         return connection, sftp
 
     @api.model
-    def read_datas(self, attach):
-        connection, sftp = self.ssh_connection(attach.storage_id)
+    def read_datas(self, fname, bin_size=False, storage_id=False, **kwargs):
+        if not storage_id:
+            raise UserError(_('Storage is required'))
+        connection, sftp = self.ssh_connection(storage_id)
         sftp.normalize('.')
-        sftp.chdir(attach.storage_id.config.get('path', '.'))
-        fname = attach.store_fname
+        sftp.chdir(storage_id.config.get('path', '.'))
         path = fname.split('/')
         file_name = path[-1]
         for p in path[:-1]:
-            _logger.info(p)
             if p == "":
                 continue
             try:
                 sftp.chdir(p)
             except IOError:
-                _logger.info('Create folder %s' % p)
                 sftp.mkdir(p)
                 sftp.chdir(p)
         f = sftp.open(file_name, 'rb')
@@ -53,33 +55,24 @@ class IrAttachmentSsh(models.AbstractModel):
         f.close()
         sftp.close()
         connection.close()
-        _logger.info(data)
         return base64.b64encode(data)
 
     @api.model
-    def write_datas(self, attach):
-        connection, sftp = self.ssh_connection(attach.storage_id)
+    def _compute_fname(self, value, checksum, storage_id=False, **kwargs):
+        return checksum[:3] + '/' + checksum
+
+    @api.model
+    def write_datas(self, value, checksum, storage_id=False, **kwargs):
+        if not storage_id:
+            raise UserError(_('Storage is required'))
+        connection, sftp = self.ssh_connection(storage_id)
         sftp.normalize('.')
-        sftp.chdir(attach.storage_id.config.get('path', '.'))
-        value = attach.datas
+        sftp.chdir(storage_id.config.get('path', '.'))
         bin_data = base64.b64decode(value) if value else b''
-        fname = attach.store_fname
+        fname = kwargs.get('fname', False)
         if not fname:
-            today = fields.Date.from_string(fields.Date.today())
-            fname = '%s/%s/%s/%s' % (
-                today.year,
-                today.month,
-                today.day,
-                attach.id
-            )
-        _logger.info(fname)
-        vals = {
-            'file_size': len(bin_data),
-            'checksum': attach._compute_checksum(bin_data),
-            'index_content': attach._index(bin_data, attach.datas_fname, attach.mimetype)
-        }
-        if not attach.store_fname:
-            vals['store_fname'] = fname
+            fname = self._compute_fname(
+                value, checksum, storage_id=storage_id, **kwargs)
         path = fname.split('/')
         file_name = path[-1]
         for p in path[:-1]:
@@ -88,19 +81,20 @@ class IrAttachmentSsh(models.AbstractModel):
             try:
                 sftp.chdir(p)
             except IOError:
-                _logger.info('Create Path %s' % p)
                 sftp.mkdir(p)
                 sftp.chdir(p)
         f = sftp.open(file_name, 'wb')
         f.write(bin_data)
         f.flush()
         f.close()
-        attach.sudo().write(vals)
         sftp.close()
         connection.close()
+        return {'store_fname': fname}
 
-    def delete_datas(self, attach):
-        connection, sftp = self.ssh_connection(attach.storage_id)
+    def delete_datas(self, fname, storage_id=False, **kwargs):
+        if not storage_id:
+            raise UserError(_('Storage is required'))
+        connection, sftp = self.ssh_connection(storage_id)
         path = sftp.normalize('.')
         sftp.close()
         connection.close()
