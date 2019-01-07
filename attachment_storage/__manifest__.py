@@ -11,6 +11,7 @@
     'website': 'https://github.com/OCA/odoo-storage',
     'depends': [
         'attachment_hook',
+        'base_sparse_field',
     ],
     'data': [
     ],

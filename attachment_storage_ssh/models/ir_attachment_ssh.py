@@ -1,7 +1,7 @@
 # Copyright 2018 Creu Blanca
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import api, fields, models, _
+from odoo import api, models
 from odoo.exceptions import UserError
 import logging
 import base64
@@ -95,6 +95,6 @@ class IrAttachmentSsh(models.AbstractModel):
         if not storage_id:
             raise UserError(_('Storage is required'))
         connection, sftp = self.ssh_connection(storage_id)
-        path = sftp.normalize('.')
+        # path = sftp.normalize('.')
         sftp.close()
         connection.close()
