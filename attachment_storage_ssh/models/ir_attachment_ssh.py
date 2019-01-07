@@ -16,8 +16,6 @@ class IrAttachmentSsh(models.AbstractModel):
     _name = 'ir.attachment.ssh'
     _inherit = 'ir.attachment.system'
 
-    connection = False
-    
     @api.model
     def ssh_connection(self, storage):
         connection = SSHClient()
