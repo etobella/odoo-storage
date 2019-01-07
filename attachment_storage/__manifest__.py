@@ -14,6 +14,7 @@
         'base_sparse_field',
     ],
     'data': [
+        'security/ir.model.access.csv',
     ],
     'demo': [
     ],
