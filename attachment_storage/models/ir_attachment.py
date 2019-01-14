@@ -38,4 +38,6 @@ class IrAttachment(models.Model):
         return self.storage_id or bool(self.store_fname)
 
     def _file_storage_arguments(self):
-        return {'storage_id': self.storage_id}
+        args = super()._file_storage_arguments()
+        args.update({'storage_id': self.storage_id})
+        return args
