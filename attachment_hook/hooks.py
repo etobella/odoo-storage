@@ -50,7 +50,8 @@ def post_load_hook():
             # write as superuser, as user probably does not have write access
             super(IrAttachment, attach.sudo()).write(vals)
             if fname:
-                self._file_delete(fname, **(attach._file_storage_arguments()))
+                self._file_delete_storage(
+                    fname, **(attach._file_storage_arguments()))
 
     def new_unlink(self):
         self.check('unlink')
