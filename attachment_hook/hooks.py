@@ -14,6 +14,8 @@ def post_load_hook():
         IrAttachment.old_unlink = IrAttachment.unlink
 
     def _new_compute_datas(self):
+        if not hasattr(self, '_file_read_storage'):
+            return self.old_compute_datas()
         bin_size = self._context.get('bin_size')
         for attach in self:
             if attach._search_file_storage():
@@ -24,6 +26,8 @@ def post_load_hook():
                 attach.datas = attach.db_datas
 
     def _new_inverse_datas(self):
+        if not hasattr(self, '_file_read_storage'):
+            return self.old_inverse_datas()
         location = self._storage()
         for attach in self:
             # compute the fields that depend on datas
@@ -54,6 +58,8 @@ def post_load_hook():
                     fname, **(attach._file_storage_arguments()))
 
     def new_unlink(self):
+        if not hasattr(self, '_file_read_storage'):
+            return self.old_unlink()
         self.check('unlink')
 
         # First delete in the database, *then* in the filesystem if the
